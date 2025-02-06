@@ -16,7 +16,21 @@ router.get("/", async function(req, res, next) {
     res.status(500).send(err)
   }
 });
+//endpoint to get student by id
+router.get("/:id", async function(req, res, next) {
+  try {
+    const studentId = req.params.id; // Get the student ID from the request URL
+    const result = await db(`SELECT * FROM students WHERE id = ?;`, [studentId]); // Use parameterized query to prevent SQL injection
+    
+    if (result.data.length === 0) {
+      return res.status(404).json({ message: "Student not found" });
+    }
 
+    res.json(result.data[0]); // Return the student object
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
 /* POST a new student */
 
 router.post("/", async function(req, res, next) {
