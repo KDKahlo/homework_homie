@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import PropTypes from 'prop-types';
 
 export default function Login({setUserData}) {
     const [credentials, setCredentials] = useState({
@@ -86,3 +87,6 @@ export default function Login({setUserData}) {
         </>
     );
 }
+Login.propTypes = {
+    setUserData: PropTypes.func.isRequired, // This defines the prop type and makes it required
+};

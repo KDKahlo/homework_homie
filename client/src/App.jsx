@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';// import React library to use its features
+import { useState, useEffect } from 'react';// import React library to use its features
 import './App.css';  // import CSS file for styling
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'; // import components from react-router-dom for routing
+import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'; // import components from react-router-dom for routing
 import Subject from './components/Subject'; // import a component called Subject
 import Dashboard from './components/Dashboard'; // import a component called Dashboard
 import Login from './components/Login';

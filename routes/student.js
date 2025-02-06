@@ -33,29 +33,46 @@ router.get("/:id", async function(req, res, next) {
 });
 /* POST a new student */
 
-router.post("/", async function(req, res, next) {
- 
-    const { firstname, lastname, email, username, avatar, password} = req.body
-     const hash = await bcrypt.hash(password, saltRounds);
-    console.log(`This is my req.body ${ firstname, lastname, email, username, avatar, password }`)
-    if (!req.body) {
-      res.status(400).send({
-        message: "Please complete the form",
-    });
-    return;
-    }
-  
-    try {
-      await db (
-        `INSERT INTO students (firstname, lastname, email, username, avatar, password) 
-        VALUES ('${firstname}','${lastname}','${email}','${username}','${avatar}','${hash}');`
-        );
-      const result = await db("SELECT * FROM students;");
-      res.send(result.data);
-    } catch (err) {
-      res.status(500).send(err)
-    }
-  });
+
+router.post("/", async function (req, res) {
+  try {
+      const { firstname, lastname, email, username, avatar, password } = req.body;
+
+      console.log("Received registration data:", req.body);
+
+      // ✅ Validate required fields
+      if (!firstname || !lastname || !email || !username || !password) {
+          return res.status(400).json({ message: "Please complete all required fields." });
+      }
+
+      // ✅ Check if username or email already exists
+      const existingUser = await db("SELECT * FROM students WHERE username = ? OR email = ?", [username, email]);
+
+      if (existingUser.data.length > 0) {
+          return res.status(400).json({ message: "Username or email already in use." });
+      }
+
+      // ✅ Hash the password securely
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // ✅ Use a parameterized query to prevent SQL injection
+      const query = `INSERT INTO students (firstname, lastname, email, username, avatar, password) 
+                     VALUES (?, ?, ?, ?, ?, ?);`;
+
+      await db(query, [firstname, lastname, email, username, avatar || null, hashedPassword]);
+
+      // ✅ Fetch the newly created user (excluding password for security)
+      const newUser = await db("SELECT id, firstname, lastname, email, username, avatar FROM students WHERE username = ?", [username]);
+
+      console.log("New user registered:", newUser.data[0]);
+
+      res.status(201).json({ message: "Registration successful!", student: newUser.data[0] });
+
+  } catch (error) {
+      console.error("Error during registration:", error);
+      res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
 
 //needed to update JOHN DOE PASSWORD SO IT COULD BE HASHED 
 //   router.put("/:username/password", async function(req, res, next) {

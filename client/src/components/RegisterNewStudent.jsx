@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-export default function newStudent () {
+export default function NewStudent () {
     
     const navigate = useNavigate();
     const [ newStudent, setNewStudent ] = useState({
@@ -15,9 +15,9 @@ export default function newStudent () {
 
     const addNewStudent = async () => {
         try {
-        const response = await fetch("/", { 
-            method: POST,
-            header: {
+        const response = await fetch("/api/auth/register", { 
+            method: "POST",
+            headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(newStudent)
@@ -26,33 +26,35 @@ export default function newStudent () {
         console.log("this is my response from addNewStudent!", response);
         if (response.ok) {
             const data = await response.json();
+            console.log("Registered User:", data);
             navigate("../");
         } else {
-            console.error("Failed to add student");
+            console.error("Failed to add student", response.status);
         }
     } catch (error) {
-        console.log("Error adding new student");
+        console.log("Error adding new student", error);
     }
 }
 
 const handleChange = (e) => {
     const { name, value } = e.target;
     console.log("This is my handleChange function:", name, value);
-    setNewPlayer(prevState => ({
+    setNewStudent(prevState => ({
         ...prevState,
         [name]: value
     }));
-}
-//handleSumbit for adding new student input into the addStudent function
+};
+
 const handleSubmit = async (e) => {
-  e.preventDefault();
-  await addNewStudent(newStudent);
-}
+    e.preventDefault();
+console.log("SUBMIT button clicked")
+    await addNewStudent(); // No need to pass newStudent
+};
 
 // LINK TO LOGIN FORM
-const handleNavigateToLogin = () => {  // moves the user to the login page if they have an account already
-    navigate("./");
-  }
+// const handleNavigateToLogin = () => {  // moves the user to the login page if they have an account already
+//     navigate("./");
+//   }
 
   return (
     <div>
@@ -73,7 +75,7 @@ const handleNavigateToLogin = () => {  // moves the user to the login page if th
     <Link to="/" className="link-to-login">Oops, I have an account.</Link>
     </div>
     <div className ="new-acct-submit-iconbutton">
-        <h5>Make sure your password is secure - don't share it with anyone else!</h5>
+        <h5>(Make sure your password is secure - don &apos t share it with anyone else!)</h5>
         <button name="submit" type="submit" >Register</button>
         </div>
         </form>

@@ -11,29 +11,48 @@ const supersecret = process.env.SUPER_SECRET;
   // POST: LOGIN student
   router.post("/login", async (req, res) => {
     const { username, password } = req.body;
-  
+    console.log("THIS IS REQ.BODY", req.body);
+
     try {
-      const results = await db(
-        `SELECT * FROM students WHERE username = '${username}'`
-      );
-      const user = results.data[0];
-      if (user) {
+        // Fetch user from database
+        const results = await db(
+            `SELECT * FROM students WHERE username = '${username}'`
+        );
+
+        console.log("THIS IS USERNAME", username);
+        const user = results.data[0];
+        console.log("THIS IS USER", user);
+
+        if (!user) {
+            return res.status(400).send({ message: "Student does not exist" });
+        }
+
         const user_id = user.id;
-  
-        const correctPassword = await bcrypt.compare(password, user.password);
-  
-        if (!correctPassword) throw new Error("Incorrect password");
-  
+        const hashedPassword = user.password; // The stored hashed password
+        console.log("THIS IS hashedPassword: ", hashedPassword);
+        console.log("THIS IS enteredPassword: ", password);
+
+        // Compare entered password with stored hash
+        const isPasswordCorrect = await bcrypt.compare(password, hashedPassword);
+
+        console.log("Password match:", isPasswordCorrect);
+
+        if (!isPasswordCorrect) {
+            return res.status(400).send({ message: "Incorrect password" });
+        }
+
+        // Generate JWT token
         var token = jwt.sign({ user_id }, supersecret);
-        // Log the user data before sending the response
         console.log("User data:", user);
-        res.send({ message: `Hello, ${user.firstname}`, token, student: user });//To send the student data along with the response, you need to fetch the user data from the database and include it in the response object.
-      } else {
-        throw new Error("Student does not exist");
-      }
+
+        // Send response with token and user data
+        res.send({ message: `Hello, ${user.firstname}`, token, student: user });
+
     } catch (err) {
-      res.status(400).send({ message: err.message });
+        console.error("Error during login:", err);
+        res.status(500).send({ message: "Internal Server Error" });
     }
-  });
+});
+
 
 module.exports = router;
